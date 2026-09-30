@@ -1,0 +1,12 @@
+# dsh-plugin-wechat-bubble bundle patch.
+#
+# Mounts this package as a loader entry so the client-modules registry can
+# discover the `dsh.client` declaration in package.json and ship the browser
+# half (client.js) to the Web UI.
+#
+# The node half (index.js) is a deliberate no-op: this is a pure
+# client-side UI plugin with no host-side logic. The entry exists only so the
+# package is a loaded cordis entry that the browser roster scan can see.
+- insert:
+    - id: wechat-bubble
+      name: 'dsh-plugin-wechat-bubble'

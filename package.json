@@ -1,0 +1,37 @@
+{
+  "name": "dsh-plugin-wechat-bubble",
+  "version": "3.0.0",
+  "description": "WeChat-style green user message bubble for the DeepSeek Harness Web UI. Pure client-side CSS injection: restyles ONLY the user-side bubble (background + shape); AI replies, system messages, code blocks and avatars keep their system defaults.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": []
+    }
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "client-plugin",
+    "wechat",
+    "chat-bubble",
+    "theme",
+    "css"
+  ],
+  "license": "MIT"
+}
