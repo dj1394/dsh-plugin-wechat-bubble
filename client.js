@@ -54,6 +54,11 @@ window.__ModuleLoader__.load({
 		var USER_ROW = "body [class*='_userRow']";
 		var BUBBLE = "[class*='_bubble']";
 		var EASYREWRITE = "div[data-dsh-easyrewrite='user'] > div[title]";
+		/* dsh-msg-edit (bubble edit/recall plugin) replaces the official user-bubble
+		 * renderer too: a row div carrying data-dsh-msg-edit="user" whose direct
+		 * child bubble div is classless with an INLINE background style. Like
+		 * easyrewrite, it needs !important to beat the inline style. */
+		var MSG_EDIT = "div[data-dsh-msg-edit='user'] > div[title]";
 		/* Second user-bubble variant: classless content div inside a right-aligned
 		 * flex column, scoped under the flow-item wrapper. This is the DOM DSH uses
 		 * for plain-text user messages (no _bubble class). The [style*="flex-end"]
@@ -63,7 +68,7 @@ window.__ModuleLoader__.load({
 
 		var css = [
 			/* ---- Light mode: WeChat classic green ---- */
-			USER_ROW + " " + BUBBLE + ", " + FLOW_BUBBLE + " {",
+			USER_ROW + " " + BUBBLE + ", " + FLOW_BUBBLE + ", " + MSG_EDIT + " {",
 			"  background: #95ec69 !important;   /* WeChat sent-bubble green */",
 			"  border-radius: 6px !important;    /* WeChat's subtle corner rounding */",
 			"  padding: 12px 16px !important;    /* Part 3: airier (was 10px 12px) */",
@@ -80,11 +85,20 @@ window.__ModuleLoader__.load({
 			"  line-height: 24px !important;      /* Part 3: 22px + 2 */",
 			"  letter-spacing: 0.1em !important;  /* Part 3: +10% of font size */",
 			"}",
+			/* dsh-msg-edit user bubble (inline style -> !important) */
+			MSG_EDIT + " {",
+			"  background: #95ec69 !important;",
+			"  border-radius: 6px !important;",
+			"  padding: 12px 16px !important;     /* Part 3: airier */",
+			"  font-size: 16px !important;        /* Part 3: 14px + 2 */",
+			"  line-height: 24px !important;      /* Part 3: 22px + 2 */",
+			"  letter-spacing: 0.1em !important;  /* Part 3: +10% of font size */",
+			"}",
 			/* ---- Dark mode: brightness-adapted green ----
 			 * The framework's label color is near-white in dark mode, so the
 			 * green is darkened to keep the (unchanged) text readable. Only
 			 * the background is retuned; shape and padding stay identical. */
-			"body[data-ds-dark-theme] [class*='_userRow'] " + BUBBLE + ", body[data-ds-dark-theme] " + FLOW_BUBBLE + " {",
+			"body[data-ds-dark-theme] [class*='_userRow'] " + BUBBLE + ", body[data-ds-dark-theme] " + FLOW_BUBBLE + ", body[data-ds-dark-theme] " + MSG_EDIT + " {",
 			"  background: #4a7c34 !important;   /* darkened WeChat green for dark surfaces */",
 			"}",
 			"body[data-ds-dark-theme] " + EASYREWRITE + " {",
@@ -100,11 +114,13 @@ window.__ModuleLoader__.load({
 			 * The 7px overhang lands inside the chat scroll container's
 			 * horizontal padding, so nothing clips it. */
 			USER_ROW + " " + BUBBLE + ",",
-			EASYREWRITE + " {",
+			EASYREWRITE + ",",
+			MSG_EDIT + " {",
 			"  position: relative;",
 			"}",
 			USER_ROW + " " + BUBBLE + "::before,",
-			EASYREWRITE + "::before {",
+			EASYREWRITE + "::before,",
+			MSG_EDIT + "::before {",
 			"  content: \"\";",
 			"  position: absolute;",
 			"  top: 12px;",
@@ -116,7 +132,8 @@ window.__ModuleLoader__.load({
 			"  border-left: 7px solid #95ec69;",
 			"}",
 			"body[data-ds-dark-theme] [class*='_userRow'] " + BUBBLE + "::before,",
-			"body[data-ds-dark-theme] " + EASYREWRITE + "::before {",
+			"body[data-ds-dark-theme] " + EASYREWRITE + "::before,",
+			"body[data-ds-dark-theme] " + MSG_EDIT + "::before {",
 			"  border-left-color: #4a7c34;",
 			"}"
 		].join("\n");
@@ -154,9 +171,15 @@ window.__ModuleLoader__.load({
 			if (/_bubble\b/.test(cls)) return true;
 			/* Second variant: classless content div inside right-aligned flex column */
 			var st = el.getAttribute("style") || "";
-			return st.indexOf("max-width") !== -1 &&
+			if (st.indexOf("max-width") !== -1 &&
 				el.parentElement &&
-				(el.parentElement.getAttribute("style") || "").indexOf("flex-end") !== -1;
+				(el.parentElement.getAttribute("style") || "").indexOf("flex-end") !== -1) return true;
+			/* Third variant: dsh-msg-edit user bubble — classless div with a title,
+			 * direct child of the data-dsh-msg-edit="user" row. */
+			if (el.hasAttribute("title") &&
+				el.parentElement &&
+				el.parentElement.getAttribute("data-dsh-msg-edit") === "user") return true;
+			return false;
 		}
 
 		function paint(el) {
@@ -178,6 +201,9 @@ window.__ModuleLoader__.load({
 						/* Variant 2: classless content divs in right-aligned flex columns */
 						var flows = document.querySelectorAll("[class*='flowItem'] div[style*='flex-end'] > div[style*='max-width']");
 						for (var j = 0; j < flows.length; j++) paint(flows[j]);
+						/* Variant 3: dsh-msg-edit user bubbles */
+						var edits = document.querySelectorAll("div[data-dsh-msg-edit='user'] > div[title]");
+						for (var k = 0; k < edits.length; k++) paint(edits[k]);
 					};
 
 					/* Strategy: continuously repaint ALL user bubbles every 150ms.

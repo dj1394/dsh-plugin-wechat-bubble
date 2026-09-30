@@ -2,11 +2,11 @@
 
 # dsh-plugin-wechat-bubble（微信气泡插件）
 
-> 版本 `260930-101335` · 作者：大江
+> 版本 `260930-104508` · 作者：大江
 
 把 DSH Web 界面里 **你发出的消息气泡** 改成微信经典样式。纯前端 CSS 插件，无后端逻辑，不改任何功能。
 
-- **版本**：3.0.0（跨 DSH 构建通吃，双气泡结构全覆盖）
+- **版本**：3.1.0（跨 DSH 构建通吃，三种气泡结构全覆盖 + dsh-msg-edit 适配）
 - **平台**：DSH Web（浏览器端 client plugin）
 - **入口**：`index.js`（宿主侧空壳）→ 真正工作在 `client.js`
 - **配置注入**：无（纯 CSS，无 config）
@@ -25,7 +25,7 @@
 本插件已挂到 **`web` profile**（3080 GUI 实际运行的 profile），源码目录：
 
 ```
-D:\DSH_HOME\dsh\profiles\web\plugins\dsh-plugin-wechat-bubble\
+<profile>\plugins\dsh-plugin-wechat-bubble\
 ```
 
 安装链路（已完成）：
@@ -130,6 +130,8 @@ D:\DSH_HOME\dsh\profiles\web\plugins\dsh-plugin-wechat-bubble\
   无 class 的 `flowItem > flex-end > max-width` 路径，之前选择器完全没覆盖到。
   新增 `FLOW_BUBBLE` 选择器 + 全规则 `!important` + 150ms 持续轮询双保险。
   交叉对话、连发、AI 回复后重渲染——全绿稳定。
+
+- **3.1.0** — 新增 `dsh-msg-edit` 插件气泡适配：该插件的用户气泡同样是无 class 的行内样式结构（`div[data-dsh-msg-edit='user'] > div[title]`），新增第三方目标选择器 + `!important` 覆盖，并把它并入 150ms 轮询的 DOM 变体识别。
 
 ## 开源协议
 
