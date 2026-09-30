@@ -22,10 +22,10 @@
 
 ## 安装（link 源码目录，当前 DSH 本地插件规范）
 
-本插件已挂到 **`web` profile**（3080 GUI 实际运行的 profile），源码目录：
+本插件已挂到本地 DSH 的 **`web` 和 `desktop` 两个 profile**（DSH Desktop 桌面端当前活动的是 `desktop`），源码目录：
 
 ```
-<profile>\plugins\dsh-plugin-wechat-bubble\
+<DSH_HOME>\profiles\<profile>\plugins\dsh-plugin-wechat-bubble\
 ```
 
 安装链路（已完成）：
@@ -40,7 +40,7 @@
 ## 工作原理
 
 通过 `ctx.effect` 注入一个 `<style>` 标签（插件卸载/HMR 时自动移除），同时启动
-150ms 持续轮询对气泡写内联样式（双保险）。CSS 覆盖**三种用户气泡结构**：
+150ms 持续轮询对气泡写内联样式（双保险）。CSS 覆盖**四种用户气泡结构**：
 
 1. **官方 `_bubble` class**（前缀无关）：`[class*='_userRow'] [class*='_bubble']`
    —— 匹配 CSS-module 哈希后缀，跨 DSH 构建通吃（0.1.x `Sixlwa_`、0.2.x `cJsG2q_`
@@ -51,6 +51,10 @@
    通过右对齐 flex 容器 + max-width 内联样式定位。这是日常发消息的主要形态。
 3. **dsh-easyrewrite 插件气泡**：`div[data-dsh-easyrewrite='user'] > div[title]`
    —— 该目标带行内样式，必须用 `!important` 才能覆盖。
+4. **dsh-msg-edit 插件气泡**（v3.1.0 新增）：`div[data-dsh-msg-edit='user'] > div[title]`
+   —— 同样替换了官方渲染器：气泡无 class、背景来自内联样式，靠 `data-dsh-msg-edit`
+   属性存在性定位（属性匹配不怕换语言），与 easyrewrite 一样必须 `!important`；
+   150ms 轮询也把这一变体纳入重画范围。
 
 所有规则均加 `!important`（压过 React 的内联 style prop）。轮询每 150ms 全量
 重画所有用户气泡的内联样式（`setProperty(..., "important")`），确保即使 React
@@ -131,7 +135,7 @@
   新增 `FLOW_BUBBLE` 选择器 + 全规则 `!important` + 150ms 持续轮询双保险。
   交叉对话、连发、AI 回复后重渲染——全绿稳定。
 
-- **3.1.0** — 新增 `dsh-msg-edit` 插件气泡适配：该插件的用户气泡同样是无 class 的行内样式结构（`div[data-dsh-msg-edit='user'] > div[title]`），新增第三方目标选择器 + `!important` 覆盖，并把它并入 150ms 轮询的 DOM 变体识别。
+- **3.1.0** — 新增 `dsh-msg-edit` 插件气泡适配：该插件的用户气泡同样是无 class 的行内样式结构（`div[data-dsh-msg-edit='user'] > div[title]`），新增第三方目标选择器 + `!important` 覆盖，并把它并入 150ms 轮询的 DOM 变体识别；README 安装路径改为 profile 无关写法（不再写死盘符）。
 
 ## 开源协议
 
